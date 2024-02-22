@@ -1,0 +1,41 @@
+version: "3.7"
+
+services:
+  # Matic pgAdmin 4.
+  matic-pgadmin:
+    image: dpage/pgadmin4:7.4
+    container_name: pgadmin.localhost
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@udo.com
+      PGADMIN_DEFAULT_PASSWORD: 1234
+    ports:
+      - 8080:80
+    logging:
+      driver: none
+
+  # API Gateway PostgreSQL service.
+  matic-postgres:
+    image: postgres:13-alpine
+    container_name: postgres.local
+    environment:
+      POSTGRES_DB: udo_postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - 5433:5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "postgres", "-U", "postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    command: ["postgres", "-c", "log_statement=all"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  default:
+    name: udo-api-network
