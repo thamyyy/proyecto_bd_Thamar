@@ -155,8 +155,8 @@ app.post("/boards/lists/cards_users", async (req: Request, res: Response) => {
   try {
     await validateOrReject(cards_usersDto);
 
-    const text = "UPDATE cards_users SET isowner=true WHERE cardid=$1 RETURNING *";
-    const values = [cards_usersDto.cardId];
+    const text = "INSERT INTO card_users(isOwner, cardId, userId) VALUES($1, $2, $3)";
+    const values = [false, cards_usersDto.cardId, cards_usersDto.userId];
     const result = await pool.query(text, values);
     res.status(201).json(result.rows[0]);
   } catch (errors) {
@@ -165,11 +165,11 @@ app.post("/boards/lists/cards_users", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/boards/lists/cards_users", async (req: Request, res: Response) => {
+app.get("/boards/lists/cards", async (req: Request, res: Response) => {
   try {
-    const value = [req.body.cardId];
+    const value = [req.body.listId];
     const text =
-      'SELECT c.id, c.title, c.description, c.date_exp, u.name "Owner", cu.isowner FROM cards c JOIN cards_users cu ON c.id = cu.cardid JOIN users u ON cu.userid = u.id WHERE c.id = $1';
+      'SELECT c.id, c.title, c.description, c.date_exp, u.name "Owner" FROM cards c JOIN cards_users cu ON c.id = cu.cardid JOIN users u ON cu.userid = u.id WHERE c.listId = $1';
     const result = await pool.query(text, value);
     res.status(200).json(result.rows);
   } catch (errors) {
